@@ -8,83 +8,90 @@ import java.util.StringTokenizer;
 import java.util.*;
  
 public class Main {
- 
-	static int N = 7;
-	static boolean[][] vis;
-	static char[] chs;
-	static int ans;
+		
+	private static final int N = 7;
+	private static final int G_SIZE = 9;
+	private static int[] dx = {-1,0,1,0};
+	private static int[] dy = {0,1,0,-1};
+	private static int[] path;
+	private static boolean[][] isGood;
+	private static int ans;
 	
 	public static void main(String[] args) throws IOException {
 		PrintWriter pw = new PrintWriter(System.out);
-//		FastScanner sc =  new FastScanner();
-		Reader sc = new Reader();
+		Reader s = new Reader();
+		char[] ch = s.readLine().toCharArray();
 		ans = 0;
-		vis = new boolean[N][N];
-		chs = sc.readLine().toCharArray();
-		dfs(0,0,-1,'e');
+		path = new int[48];
+		isGood = new boolean[G_SIZE][G_SIZE];
+		for(int i=0;i<48;i++) {
+			if(ch[i]=='U') path[i] = 0;
+			else if(ch[i]=='R') path[i] = 1;
+			else if(ch[i]=='D') path[i] = 2;
+			else if(ch[i]=='L') path[i] = 3;
+			else path[i] = 4;
+		}
+		
+		for(int i=0;i<9;i++) {
+			isGood[i][0] = true;
+			isGood[i][8] = true;
+			isGood[0][i] = true;
+			isGood[8][i] = true;
+		}
+		for(int i=1;i<8;i++) {
+			for(int j=1;j<8;j++) {
+				isGood[i][j] = false;
+			}
+		}
+		
+		dfs(0,1,1);
 		pw.println(ans);
 		
 		pw.close();
 	} 
 	
-	static void dfs(int x,int y, int pos, char ch) {
-		if (pos>48 || vis[x][y])
-			return;
-		
-		if(pos>0 && pos<48 && chs[pos]!='?' && chs[pos]!=ch) {
+	static void dfs(int index, int x, int y) {
+		if(isGood[x][y-1] && isGood[x][y+1] && (!isGood[x-1][y]&&!isGood[x+1][y])) {
 			return;
 		}
 		
-		if(x==N-1&&y==0) {
-			if(pos==47) {
+		if(isGood[x-1][y] && isGood[x+1][y] && (!isGood[x][y-1] && !isGood[x][y+1])) {
+			return;
+		}
+		
+		if(x==7&&y==1) {
+			if (index==48) {
 				ans++;
 			}
 			return;
 		}
 		
-		vis[x][y] = true;
+		if(index == 48) return;
 		
-		if(!isNotGood(x+1,y,ch)) {
-			dfs(x+1,y,pos+1,'D');
+		isGood[x][y] = true;
+		
+		if(path[index]==4) {
+			for(int i=0;i<4;i++) {
+				int nextx = x + dx[i];
+				int nexty = y + dy[i];
+				if(!isGood[nextx][nexty]) {
+					dfs(index+1, nextx, nexty);
+				}
+			}
+			
+		} else {
+			int nextx = x + dx[path[index]];
+			int nexty = y + dy[path[index]];
+			if(!isGood[nextx][nexty]) {
+				dfs(index+1, nextx, nexty);
+			}
 		}
 		
-		if(!isNotGood(x,y+1,ch)) {
-			dfs(x,y+1,pos+1,'R');
-		}
-		
-		if(!isNotGood(x-1,y,ch)) {
-			dfs(x-1,y,pos+1,'U');
-		}
-		
-		if(!isNotGood(x,y-1,ch)) {
-			dfs(x,y-1,pos+1,'L');
-		}
-		
-		vis[x][y] = false;
-		
+		isGood[x][y] = false;
 		
 	}
 	
-	static boolean isNotGood(int x,int y,char ch) {
-		if(isNotValid(x,y)) {
-			return true;
-		}
-		boolean check = false;
-		if(ch=='U') {
-			check = isNotValid(x-1,y) && !isNotValid(x,y+1) && !isNotValid(x,y-1);
-		} else if(ch=='D') {
-			check = isNotValid(x+1,y) && !isNotValid(x,y+1) && !isNotValid(x,y-1);
-		} else if(ch=='L') {
-			check = isNotValid(x,y-1) && !isNotValid(x+1,y) && !isNotValid(x-1,y);
-		} else if(ch=='R') {
-			check = isNotValid(x,y+1) && !isNotValid(x+1,y) && !isNotValid(x-1,y);
-		}
-		return check;
-	}
 	
-	static boolean isNotValid(int x,int y) {
-		return x<0||x>N-1||y<0||y>N-1||vis[x][y];
-	}
 	
 	static class Reader {
         final private int BUFFER_SIZE = 1 << 16;
