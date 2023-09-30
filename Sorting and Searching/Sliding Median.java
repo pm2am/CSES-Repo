@@ -8,88 +8,61 @@ import java.util.StringTokenizer;
 import java.util.*;
  
 public class Main {
-	
+	static final class Node {
+		int x,y;
+		public Node(int x, int y) {
+			this.x = x;
+			this.y = y;
+		}
+	}
 	public static void main(String[] args) throws IOException {
-		PrintWriter pw = new PrintWriter(System.out);
-        Reader sc = new Reader();
-        StringBuffer buffer = new StringBuffer();
+		final PrintWriter pw = new PrintWriter(System.out);
+        final Reader sc = new Reader();
+        final StringBuffer buf = new StringBuffer();
         
-        int n = sc.nextInt();
-        int k = sc.nextInt();
-        PriorityQueue<Integer> first = new PriorityQueue<>((a,b)-> {
-        	return b-a;
+        final int n = sc.nextInt();
+        final int k = sc.nextInt();
+        final TreeSet<Node> first = new TreeSet<>((a,b)-> {
+        	if(a.x==b.x) return a.y-b.y;
+        	return b.x-a.x;
         });
-        PriorityQueue<Integer> second = new PriorityQueue<>();
-        int[] a = new int[n];
-        for(int i=0;i<n;i++) {
-        	a[i] = sc.nextInt();
-        }
+        final TreeSet<Node> second = new TreeSet<>((a,b)-> {
+        	if(a.x==b.x) return a.y-b.y;
+        	return a.x-b.x;
+        });
+        final Node[] a = new Node[n];
         int s1 = (k+1)/2;
-        for(int i=0;i<k;i++) {
-        	if(i<s1) {
-        		first.add(a[i]);
+        for(int i=0;i<n;i++) {
+        	final Node ne = new Node(sc.nextInt(),i);
+        	a[i] = ne;
+        	if (i<k) {
+            	if(i<s1) {
+            		first.add(ne);
+            	} else {
+            		first.add(ne);
+            		second.add(first.pollFirst());
+            	}
+            	if(i==k-1) {
+            		buf.append(first.first().x+" ");
+            	}
         	} else {
-        		first.add(a[i]);
-        		second.add(first.poll());
+            	final Node rm = a[i-k];
+            	if(first.contains(rm)) {
+            		first.remove(rm);
+            		second.add(ne);
+            		first.add(second.pollFirst());
+            	} else {
+            		second.remove(rm);
+            		first.add(ne);
+            		second.add(first.pollFirst());
+            	}
+            	buf.append(first.first().x+" ");
         	}
         }
-        buffer.append(first.peek()).append(" ");
-        for(int i=k;i<n;i++) {
-        	int rm = a[i-k];
-        	if(rm<=first.peek()) {
-        		first.remove(rm);
-        		second.add(a[i]);
-        		first.add(second.poll());
-        	} else {
-        		second.remove(rm);
-        		first.add(a[i]);
-        		second.add(first.poll());
-        	}
-        	buffer.append(first.peek()).append(" ");
-        }
-        
-        
-        pw.print(buffer);
+        pw.print(buf);
  
         pw.close();
 	} 
-	
-	
-	private static int[] findPrimes(int M) {
-		int[] primes = new int[M];
-		primes[0] = primes[1] = 1;
-		for(long i=2;i<M;i++) {
-			primes[(int)i] = (int)i;
-		}
-		for(long i=2;i*i<M;i++) {
-			int t = (int)i;
-			if(primes[t]==t) {
-				for(long j = i*i;j<M;j+=i) {
-					int t1 = (int)j;
-					if(primes[t1] == t1) {
-						primes[t1] = t;
-					}
-				}
-			}
-		}
-		return primes;
-	}
-	
-	private static long modPow(long p, long q, long M) {
-		if(q==0&&p==0) return 1;
-		if(p==0) return 0;
-		long p1 = 1L;
-		while(q>0) {
-			if((q&1L)==1) {
-				p1 = (p1*p)%M;
-			}
-			p = (p*p)%M;
-			q = (q>>1L);
-		}
-		return p1;
-	}
-	
-	
 	
 	static class Reader {
         final private int BUFFER_SIZE = 1 << 16;
