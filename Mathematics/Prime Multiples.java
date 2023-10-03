@@ -10,49 +10,47 @@ import java.util.*;
  
 public class Main {
 	
-	static BigInteger gsum;
-	static int ssize;
-	
 	public static void main(String[] args) throws IOException {
 		final PrintWriter pw = new PrintWriter(System.out);
         final Reader sc = new Reader();
         
-        gsum = BigInteger.ONE;
-        ssize = 0;
         long n = sc.nextLong();
         int k = sc.nextInt();
+        
+        double con1 = Math.log(n) + 0.001D;
+        
         long[] a = new long[k];
-        long sum2 = 0L;
         for(int i=0;i<k;i++) {
         	a[i] = sc.nextLong();
         }
-        long ans = subset(a,n,0) + n;
-        pw.print(ans);
+        
+        long sum = n;
+        for(int z=0;z < (1<<k);z++) {
+        	int bitCount = Integer.bitCount(z);
+        	long prod = 1L;
+        	double con2 = 0.0d;
+        	for(int i=0;i<k;i++) {
+        		int bit = 1&(z>>i);
+        		if(bit==1) {
+        			con2+= Math.log(a[i]);
+        			prod = prod * a[i];
+        		}
+        	}
+        	if(con2<con1) {
+        		if(bitCount%2==0) {
+            		sum -= n/prod;
+            	} else {
+            		sum += n/prod;
+            	}
+        	}
+        	
+        }
+        pw.print(sum);
         
  
         pw.close();
 	} 
 	
-	static long subset(long[] a, long n, int i) {
-		long sum = 0L;
-		if(i==a.length) {
-			if(!gsum.equals(BigInteger.ZERO)) {
-				if(ssize%2==0) {
-					sum -= BigInteger.valueOf(n).divide(gsum).longValueExact(); 
-				} else {
-					sum += BigInteger.valueOf(n).divide(gsum).longValueExact(); 
-				}
-			}
-		} else {
-			sum += subset(a, n, i+1);
-			ssize++;
-			gsum = gsum.multiply(BigInteger.valueOf(a[i]));
-			sum += subset(a, n, i+1);
-			ssize--;
-			gsum = gsum.divide(BigInteger.valueOf(a[i]));
-		}
-		return sum;
-	}
 	
 	private final static long modPow(long p, long q, long M) {
 		if(q==0&&p==0) return 1;
